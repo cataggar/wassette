@@ -14,24 +14,41 @@ struct Component;
 impl Guest for Component {
     fn fetch(url: String) -> Result<String, String> {
         spin_executor::run(async move {
-            let request = Request::get(url);
-            let response: Response = send(request).await.map_err(|e| e.to_string())?;
-            let status = response.status();
-            if !(200..300).contains(status) {
-                return Err(format!("Request failed with status code: {}", status));
-            }
-            let body = String::from_utf8_lossy(response.body());
-
-            if let Some(content_type) = response.header("content-type").and_then(|v| v.as_str()) {
-                if content_type.contains("application/json") {
-                    let json: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
-                    return Ok(json_to_markdown(&json));
-                } else if content_type.contains("text/html") {
-                    return Ok(html_to_markdown(&body));
+            let mut current_url = url;
+            let mut redirects = 0;
+            let max_redirects = 5;
+            loop {
+                let request = Request::get(current_url.clone());
+                let response: Response = send(request).await.map_err(|e| e.to_string())?;
+                let status = response.status();
+                if *status == 301 || *status == 302 {
+                    if redirects >= max_redirects {
+                        return Err("Too many redirects".to_string());
+                    }
+                    if let Some(location) = response.header("location").and_then(|v| v.as_str()) {
+                        current_url = location.to_string();
+                        redirects += 1;
+                        continue;
+                    } else {
+                        return Err("Redirect response missing Location header".to_string());
+                    }
                 }
-            }
+                if !(200..300).contains(status) {
+                    return Err(format!("Request failed with status code: {}", status));
+                }
+                let body = String::from_utf8_lossy(response.body());
 
-            Ok(body.into_owned())
+                if let Some(content_type) = response.header("content-type").and_then(|v| v.as_str()) {
+                    if content_type.contains("application/json") {
+                        let json: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+                        return Ok(json_to_markdown(&json));
+                    } else if content_type.contains("text/html") {
+                        return Ok(html_to_markdown(&body));
+                    }
+                }
+
+                return Ok(body.into_owned());
+            }
         })
     }
 }
