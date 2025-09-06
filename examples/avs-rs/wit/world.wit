@@ -1,0 +1,8 @@
+package component:avs-rs;
+
+/// Azure VMware Solution (AVS) example world.
+world avs {
+    /// List Azure VMware Solution private clouds in a subscription.
+    /// Returns a newline-delimited list of resource IDs (or an error string).
+    export list-private-clouds: func(subscription-id: string) -> result<string, string>;
+}
