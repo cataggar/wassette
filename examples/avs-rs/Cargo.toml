@@ -7,9 +7,8 @@ license = "MIT"
 [dependencies]
 serde_json = "1.0.137"
 wit-bindgen-rt = { version = "0.26.0", features = ["bitflags"] }
-# We use spin-sdk for outbound HTTP to a host helper endpoint that proxies Azure (since native Azure SDK isn't WASI-ready).
-spin-sdk = "=3.0.1"
-spin-executor = "=3.0.1"
+spin-sdk = "5.0.0"
+spin-executor = "5.0.0"
 
 [lib]
 crate-type = ["cdylib"]
