@@ -4,6 +4,6 @@ permissions:
   network:
     allow:
       - host: "https://management.azure.com/"
-  environment-variables:
+  environment:
     allow:
       - key: AZURE_TOKEN

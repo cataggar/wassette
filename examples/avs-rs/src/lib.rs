@@ -10,28 +10,27 @@ struct Component;
 
 impl Guest for Component {
     fn list_private_clouds(subscription_id: String) -> Result<String, String> {
-        // For wasm build, we cannot directly use the Azure Rust SDK (depends on native features).
-        // Instead, demonstrate an HTTP GET to Azure REST management endpoint using Spin SDK outbound HTTP.
-        // NOTE: In a real secure setup you'd have the host inject an authorization header via policy/host capability.
-        spin_executor::run(async move { list_clouds_via_rest(subscription_id).await })
+    // For wasm build, we cannot directly use the Azure Rust SDK (depends on native features).
+    // Instead, demonstrate an HTTP GET to Azure REST management endpoint using Spin SDK outbound HTTP.
+    spin_executor::run(async move { list_clouds_via_rest(subscription_id).await })
     }
 }
 
 async fn list_clouds_via_rest(subscription_id: String) -> Result<String, String> {
     use spin_sdk::http::{Request, send};
     use spin_sdk::http::Response;    
-    use spin_sdk::variables;
+    // Replaced spin_sdk::variables with direct WASI env var access so host only needs standard env forwarding.
 
     // Minimal: call list private clouds API (API version may need adjusting based on service).
     // Endpoint shape: GET https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.AVS/privateClouds?api-version=2024-09-01
     let url = format!("https://management.azure.com/subscriptions/{subscription_id}/providers/Microsoft.AVS/privateClouds?api-version=2024-09-01");
 
-    // Acquire token from environment/policy via Spin variables API.
-    // Expect an environment variable AZURE_TOKEN (Bearer token) to be granted via policy.
-    let token = variables::get("AZURE_TOKEN").map_err(|_| "AZURE_TOKEN not set or not accessible".to_string())?;
-    if token.trim().is_empty() {
-        return Err("AZURE_TOKEN is empty".to_string());
-    }
+    // Acquire token from AZURE_TOKEN environment variable (inline token support removed).
+    let token = {
+        let t = std::env::var("AZURE_TOKEN").map_err(|_| "AZURE_TOKEN not set".to_string())?;
+        if t.trim().is_empty() { return Err("AZURE_TOKEN is empty".to_string()); }
+        t
+    };
 
     let mut req = Request::get(url);
     req.header("Authorization", format!("Bearer {token}"));

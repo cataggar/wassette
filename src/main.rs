@@ -496,6 +496,8 @@ async fn main() -> Result<()> {
                 let config =
                     config::Config::from_serve(cfg).context("Failed to load configuration")?;
 
+                // println!("wassette config {:#?}", config);
+
                 // Create unloaded lifecycle manager for fast startup
                 let lifecycle_manager = LifecycleManager::new_unloaded_with_env(
                     &config.plugin_dir,

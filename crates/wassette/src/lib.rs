@@ -181,6 +181,7 @@ impl LifecycleManager {
     /// This is the primary way to create a LifecycleManager for most use cases
     #[instrument(skip_all, fields(plugin_dir = %plugin_dir.as_ref().display()))]
     pub async fn new(plugin_dir: impl AsRef<Path>) -> Result<Self> {
+        info!("Creating new LifecycleManager new");
         Self::new_with_clients(
             plugin_dir,
             HashMap::new(), // Empty environment variables for backward compatibility
@@ -194,6 +195,7 @@ impl LifecycleManager {
     /// This enables fast startup with components loaded in the background
     #[instrument(skip_all, fields(plugin_dir = %plugin_dir.as_ref().display()))]
     pub async fn new_unloaded(plugin_dir: impl AsRef<Path>) -> Result<Self> {
+        info!("Creating new LifecycleManager new_unloaded");
         Self::new_unloaded_with_env(
             plugin_dir,
             HashMap::new(), // Empty environment variables for backward compatibility
@@ -207,6 +209,8 @@ impl LifecycleManager {
         plugin_dir: impl AsRef<Path>,
         environment_vars: HashMap<String, String>,
     ) -> Result<Self> {
+        info!("Creating new LifecycleManager new_unloaded_with_env");
+        info!("Environment variables: {:?}", environment_vars);
         Self::new_unloaded_with_clients(
             plugin_dir,
             environment_vars,
@@ -224,6 +228,7 @@ impl LifecycleManager {
         oci_client: oci_client::Client,
         http_client: reqwest::Client,
     ) -> Result<Self> {
+        info!("Creating new LifecycleManager new_unloaded_with_clients");
         let components_dir = plugin_dir.as_ref();
 
         if !components_dir.exists() {
@@ -284,6 +289,7 @@ impl LifecycleManager {
             .context("Failed to create downloads directory")?;
 
         info!("Unloaded LifecycleManager initialized successfully");
+        info!("Environment variables: {:?}", environment_vars);
         Ok(Self {
             engine,
             linker,
@@ -303,6 +309,7 @@ impl LifecycleManager {
         plugin_dir: impl AsRef<Path>,
         environment_vars: HashMap<String, String>,
     ) -> Result<Self> {
+        info!("Creating new LifecycleManager new_with_env");
         Self::new_with_clients(
             plugin_dir,
             environment_vars,
@@ -320,6 +327,7 @@ impl LifecycleManager {
         oci_client: oci_client::Client,
         http_client: reqwest::Client,
     ) -> Result<Self> {
+        info!("Creating new LifecycleManager new_with_clients");
         let components_dir = plugin_dir.as_ref();
 
         if !components_dir.exists() {
@@ -356,7 +364,7 @@ impl LifecycleManager {
         oci_client: oci_client::Client,
         http_client: reqwest::Client,
     ) -> Result<Self> {
-        info!("Creating new LifecycleManager");
+        info!("Creating new LifecycleManager new_with_policy");
 
         let mut registry = ComponentRegistry::new();
         let mut components = HashMap::new();

@@ -102,6 +102,13 @@ impl WasiStateTemplate {
             )?;
         }
 
+        // Inject forwarded config variables as real WASI environment variables so that
+        // component code using std::env::var can observe them (previously only available
+        // via WasiConfigVariables).
+        for (k, v) in &self.config_vars {
+            ctx_builder.env(k, v);
+        }
+
         Ok(WasiState {
             ctx: ctx_builder.build(),
             table: wasmtime_wasi::ResourceTable::default(),
@@ -212,13 +219,17 @@ pub(crate) fn extract_env_vars(
     let mut env_vars = HashMap::new();
     if let Some(env_perms) = &policy.permissions.environment {
         if let Some(env_allow_vec) = &env_perms.allow {
+            tracing::info!(allowed_keys = %env_allow_vec.iter().map(|e| e.key.as_str()).collect::<Vec<_>>().join(","), available_host_keys = %environment_vars.keys().cloned().collect::<Vec<_>>().join(","), "extract_env_vars: evaluating allowed environment variables");
             for env_allow in env_allow_vec {
                 if let Some(value) = environment_vars.get(&env_allow.key) {
                     env_vars.insert(env_allow.key.clone(), value.clone());
+                } else {
+                    tracing::info!(missing_key = %env_allow.key, "extract_env_vars: key allowed by policy but not present in host environment map");
                 }
             }
         }
     }
+    tracing::info!(forwarded_keys = %env_vars.keys().cloned().collect::<Vec<_>>().join(","), count = env_vars.len(), "extract_env_vars: finalized forwarded environment variables");
     Ok(env_vars)
 }
 

@@ -4,24 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Changed
-
-- Updated documentation to clarify Wassette as a runtime rather than a platform, with improved wording for creating WebAssembly components that can be used as Tools for AI Agents with Wassette ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-- Disabled the security audit job from GitHub Actions workflow to reduce CI noise ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-- Upgraded example components to Spin SDK & executor 5.0.0 (from 3.0.x) to leverage latest Spin runtime capabilities ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-
-### Fixed
-
-- Fixed test coverage CI failing on PRs from forked repositories by switching from PR comments to job summaries ([#237](https://github.com/microsoft/wassette/pull/237))
-- Fixed dependabot auto-merge workflow failing with "workflows permission" error by adding `workflows: write` permission ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-- Fixed inconsistent spelling of "wasette" to "wassette" in configuration paths and documentation comments ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-- Fixed broken links in README.md pointing to documentation files in wrong directory paths ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
-- Add cargo audit configuration to acknowledge unmaintained `paste` dependency warning ([#169](https://github.com/microsoft/wassette/pull/169))
-
-### Added
+### Added (v0.2.0)
 
 - **Component Discovery**: Added `search-components` tool that lists all known components available for loading from the component registry, making it easier for users to discover and load new WebAssembly tools ([#236](https://github.com/microsoft/wassette/pull/236))
 - Azure VMware Solution (AVS) example component (`avs-rs`) demonstrating listing private clouds via Azure REST (WASM) ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Debug logging for environment variable forwarding (logs allowed, available, missing, and forwarded keys during WASI state creation) ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
 - GitHub Actions workflow to automatically build and deploy mdBook documentation to GitHub Pages ([#196](https://github.com/microsoft/wassette/pull/196))
 - Dependabot automerge workflow for automated dependency updates when CI passes ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
 - Documentation for built-in tools in README, listing all 12 available tools with descriptions for better discoverability ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
@@ -48,7 +35,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Support for MCP Tool structured output as defined in the MCP specification ([#181](https://github.com/microsoft/wassette/pull/181))
 - End-to-end integration test for MCP structured output feature verification ([#181](https://github.com/microsoft/wassette/pull/181))
 
-### Changed (Previous Releases & Enhancements)
+### Removed
+
+- Inline token fallback (`<subscription>::<token>`) for AVS component; must use AZURE_TOKEN env var instead ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+
+### Changed (v0.2.0)
+
+- Updated documentation to clarify Wassette as a runtime rather than a platform, with improved wording for creating WebAssembly components that can be used as Tools for AI Agents with Wassette ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Disabled the security audit job from GitHub Actions workflow to reduce CI noise ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Upgraded example components to Spin SDK & executor 5.0.0 (from 3.0.x) to leverage latest Spin runtime capabilities ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+
+### Fixed (v0.2.0)
+
+- Fixed test coverage CI failing on PRs from forked repositories by switching from PR comments to job summaries ([#237](https://github.com/microsoft/wassette/pull/237))
+- Fixed dependabot auto-merge workflow failing with "workflows permission" error by adding `workflows: write` permission ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Fixed inconsistent spelling of "wasette" to "wassette" in configuration paths and documentation comments ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Fixed broken links in README.md pointing to documentation files in wrong directory paths ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Add cargo audit configuration to acknowledge unmaintained `paste` dependency warning ([#169](https://github.com/microsoft/wassette/pull/169))
+- Updated `avs-rs` example policy to use canonical `environment` key instead of deprecated `environment-variables` for AZURE_TOKEN permission ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Environment variables allowed by policy were only stored as config variables and not visible to std::env::var inside components; they are now injected into the WASI environment at instantiation ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+
+
+### Changed (Historical Enhancements)
 
 - **BREAKING CHANGE**: Upgraded rmcp dependency from v0.2 to v0.5.0 to enable native structured output support ([#181](https://github.com/microsoft/wassette/pull/181))
 - Copyright header instructions to Rust development guidelines ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
@@ -71,7 +79,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Optimized resource limit parsing with caching using `OnceLock` to avoid repeated string parsing ([#166](https://github.com/microsoft/wassette/pull/166))
 - Removed policy configuration section from JavaScript/TypeScript WebAssembly Component authoring guide as it's not related to component authoring ([#159](https://github.com/microsoft/wassette/pull/159))
 
-### Fixed (Previous Releases & Enhancements)
+### Fixed (Historical)
 
 - Fixed permission parsing to support "environment-variable" permission type alias for environment permissions
 - Fixed storage permission revocation to work with URI-only specification (removes all access types for the given URI)
@@ -102,7 +110,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [v0.2.0] - 2025-08-05
 
-### Added
+### Added (v0.1.0)
 
 - Enhanced component lifecycle management with improved file cleanup
 - Comprehensive documentation and release process improvements
