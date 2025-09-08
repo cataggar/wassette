@@ -1,0 +1,9 @@
+version: "1.0"
+description: "Permission policy for AVS (Azure VMware Solution) listing example"
+permissions:
+  network:
+    allow:
+      - host: "https://management.azure.com/"
+  environment:
+    allow:
+      - key: AZURE_TOKEN

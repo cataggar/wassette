@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Updated documentation to clarify Wassette as a runtime rather than a platform, with improved wording for creating WebAssembly components that can be used as Tools for AI Agents with Wassette ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
 - Disabled the security audit job from GitHub Actions workflow to reduce CI noise ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Azure VMware Solution (AVS) example component (`avs-rs`) lists private clouds using Azure SDK for Rust with a static token credential ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
+- Updated `avs-rs` example to point `azure_mgmt_vmware` dependency to local Azure SDK path ([#TBD](https://github.com/microsoft/wassette/pull/TBD))
 
 ### Fixed
 
