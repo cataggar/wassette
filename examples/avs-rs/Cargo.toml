@@ -6,7 +6,7 @@ license = "MIT"
 
 [dependencies]
 serde_json = "1.0.137"
-wit-bindgen-rt = { version = "0.37.0", features = ["bitflags"] }
+wit-bindgen-rt = { version = "0.44.0", features = ["bitflags"] }
 spin-executor = "5.0.0"
 azure_mgmt_vmware = { path = "../../.../../../azure-sdk-for-rust/services/mgmt/vmware" }
 azure_core = { path = "../../.../../../azure-sdk-for-rust2/sdk/core/azure_core" }

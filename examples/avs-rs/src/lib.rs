@@ -6,7 +6,7 @@ use avs::Guest;
 struct Component;
 
 impl Guest for Component {
-    fn list_private_clouds(subscription_id: String) -> Result<String, String> {
+    fn list_private_clouds(subscription_id: String) -> Result<Vec<avs::PrivateCloud>, String> {
         spin_executor::run(async move { list_clouds_via_rest(subscription_id).await })
     }
 }
@@ -15,7 +15,7 @@ impl Guest for Component {
 // It relies on a bearer token supplied via the AZURE_TOKEN environment variable and
 // implements a lightweight TokenCredential so that the generated management client
 // can operate without azure_identity.
-async fn list_clouds_via_rest(subscription_id: String) -> Result<String, String> {
+async fn list_clouds_via_rest(subscription_id: String) -> Result<Vec<avs::PrivateCloud>, String> {
     use futures::TryStreamExt;
 
     // Acquire token from AZURE_TOKEN env var
@@ -55,7 +55,7 @@ async fn list_clouds_via_rest(subscription_id: String) -> Result<String, String>
         .build()
         .map_err(|e| format!("client build error: {e}"))?;
 
-    let mut ids = Vec::new();
+    let mut clouds = Vec::new();
     let mut pager = client
         .private_clouds_client()
         .list_in_subscription(&subscription_id)
@@ -67,16 +67,35 @@ async fn list_clouds_via_rest(subscription_id: String) -> Result<String, String>
         .await
         .map_err(|e| format!("pager error: {e}"))?
     {
-        if let Some(id) = cloud.tracked_resource.resource.id.as_ref() {
-            ids.push(id.clone());
-        }
+        // Map Azure SDK model to avs::PrivateCloud
+        let props = cloud.properties.as_ref().unwrap();
+        let pc = avs::PrivateCloud {
+            management_cluster: props.management_cluster.cluster_id.unwrap_or_default().to_string(),
+            internet: props.internet.as_ref().map(|v| format!("{:?}", v)),
+            identity_sources: Some(props.identity_sources.iter().map(|s| format!("{:?}", s)).collect()),
+            availability: props.availability.as_ref().map(|v| format!("{:?}", v)),
+            encryption: props.encryption.as_ref().map(|v| format!("{:?}", v)),
+            extended_network_blocks: Some(props.extended_network_blocks.clone()),
+            provisioning_state: props.provisioning_state.as_ref().map(|v| format!("{:?}", v)),
+            circuit: None, // TODO: extract string if needed
+            endpoints: None, // TODO: extract string if needed
+            network_block: props.network_block.clone(),
+            management_network: props.management_network.clone(),
+            provisioning_network: props.provisioning_network.clone(),
+            vmotion_network: props.vmotion_network.clone(),
+            vcenter_password: props.vcenter_password.clone(),
+            nsxt_password: props.nsxt_password.clone(),
+            vcenter_certificate_thumbprint: props.vcenter_certificate_thumbprint.clone(),
+            nsxt_certificate_thumbprint: props.nsxt_certificate_thumbprint.clone(),
+            external_cloud_links: Some(props.external_cloud_links.clone()),
+            secondary_circuit: None, // TODO: extract string if needed
+            nsx_public_ip_quota_raised: None, // TODO: extract string if needed
+            virtual_network_id: props.virtual_network_id.clone(),
+            dns_zone_type: None, // TODO: extract string if needed
+        };
+        clouds.push(pc);
     }
-
-    if ids.is_empty() {
-        Ok("".to_string())
-    } else {
-        Ok(ids.join("\n"))
-    }
+    Ok(clouds)
 }
 
 avs::export!(Component with_types_in avs);
