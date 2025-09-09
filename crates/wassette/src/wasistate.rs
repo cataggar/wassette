@@ -102,6 +102,12 @@ impl WasiStateTemplate {
             )?;
         }
 
+        // Inject forwarded config variables as real WASI environment variables so that
+        // component code using std::env::var can observe them.
+        for (k, v) in &self.config_vars {
+            ctx_builder.env(k, v);
+        }
+
         Ok(WasiState {
             ctx: ctx_builder.build(),
             table: wasmtime_wasi::ResourceTable::default(),
