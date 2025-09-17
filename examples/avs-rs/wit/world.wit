@@ -1,0 +1,29 @@
+package component:avs-rs;
+
+world avs {
+    record private-cloud {
+        management-cluster: string,
+        internet: option<string>,
+        identity-sources: option<list<string>>,
+        availability: option<string>,
+        encryption: option<string>,
+        extended-network-blocks: option<list<string>>,
+        provisioning-state: option<string>,
+        circuit: option<string>,
+        endpoints: option<string>,
+        network-block: string,
+        management-network: option<string>,
+        provisioning-network: option<string>,
+        vmotion-network: option<string>,
+        vcenter-password: option<string>,
+        nsxt-password: option<string>,
+        vcenter-certificate-thumbprint: option<string>,
+        nsxt-certificate-thumbprint: option<string>,
+        external-cloud-links: option<list<string>>,
+        secondary-circuit: option<string>,
+        nsx-public-ip-quota-raised: option<string>,
+        virtual-network-id: option<string>,
+        dns-zone-type: option<string>
+    }
+    export list-private-clouds: func(subscription-id: string) -> result<list<private-cloud>, string>;
+}

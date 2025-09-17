@@ -729,8 +729,8 @@ impl Guest for Component {
 // Cargo.toml dependencies
 [dependencies]
 wit-bindgen-rt = { version = "0.37.0", features = ["bitflags"] }
-spin-sdk = "3.0"
-spin-executor = "3.0"
+spin-sdk = "5.0.0"
+spin-executor = "5.0.0"
 serde_json = "1.0"
 ```
 
