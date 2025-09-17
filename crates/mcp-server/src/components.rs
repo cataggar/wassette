@@ -15,7 +15,8 @@ use wassette::LifecycleManager;
 #[instrument(skip(lifecycle_manager))]
 pub(crate) async fn get_component_tools(lifecycle_manager: &LifecycleManager) -> Result<Vec<Tool>> {
     debug!("Listing components");
-    let component_ids = lifecycle_manager.list_components().await;
+    // Use known components (loaded or present on disk) for fast listing
+    let component_ids = lifecycle_manager.list_components_known().await;
 
     info!(count = component_ids.len(), "Found components");
     let mut tools = Vec::new();
@@ -111,6 +112,10 @@ pub(crate) async fn handle_component_call(
             anyhow::anyhow!("Failed to find component for tool '{}': {}", method_name, e)
         })?;
 
+    let tool_schema = lifecycle_manager
+        .get_tool_schema_for_component(&component_id, &method_name)
+        .await;
+
     let result = lifecycle_manager
         .execute_component_call(&component_id, &method_name, &serde_json::to_string(&args)?)
         .await;
@@ -118,13 +123,29 @@ pub(crate) async fn handle_component_call(
     match result {
         Ok(result_str) => {
             debug!("Component call successful");
-            let contents = vec![Content::text(result_str)];
 
-            Ok(CallToolResult {
-                content: Some(contents),
-                structured_content: None,
-                is_error: None,
-            })
+            if tool_schema
+                .as_ref()
+                .and_then(|schema| schema.get("outputSchema"))
+                .is_some()
+            {
+                let structured_value = parse_structured_result(&result_str);
+                let contents = vec![Content::text(result_str)];
+
+                Ok(CallToolResult {
+                    content: Some(contents),
+                    structured_content: Some(structured_value),
+                    is_error: Some(false),
+                })
+            } else {
+                let contents = vec![Content::text(result_str)];
+
+                Ok(CallToolResult {
+                    content: Some(contents),
+                    structured_content: None,
+                    is_error: Some(false),
+                })
+            }
         }
         Err(e) => {
             error!(error = %e, "Component call failed");
@@ -133,13 +154,18 @@ pub(crate) async fn handle_component_call(
     }
 }
 
+fn parse_structured_result(result: &str) -> Value {
+    serde_json::from_str(result).unwrap_or_else(|_| Value::String(result.to_string()))
+}
+
 #[instrument(skip(lifecycle_manager))]
 pub async fn handle_list_components(
     lifecycle_manager: &LifecycleManager,
 ) -> Result<CallToolResult> {
     info!("Listing loaded components");
 
-    let component_ids = lifecycle_manager.list_components().await;
+    // Use known components (loaded or present on disk) for fast listing
+    let component_ids = lifecycle_manager.list_components_known().await;
 
     let components_info = stream::iter(component_ids)
         .map(|id| async move {
@@ -456,6 +482,19 @@ mod tests {
 
         assert_eq!(tool.name, "minimal-tool");
         assert_eq!(tool.description, Some("No description available".into()));
+    }
+
+    #[test]
+    fn test_parse_structured_result_with_object() {
+        let json_str = r#"{"ok":{"message":"hello"}}"#;
+        let parsed = parse_structured_result(json_str);
+        assert_eq!(parsed, json!({"ok": {"message": "hello"}}));
+    }
+
+    #[test]
+    fn test_parse_structured_result_with_text() {
+        let parsed = parse_structured_result("plain text");
+        assert_eq!(parsed, json!("plain text"));
     }
 
     #[test]
