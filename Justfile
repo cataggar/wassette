@@ -1,3 +1,5 @@
+set windows-shell := ["pwsh", "-c"]
+
 # Clean component target directories to avoid permission issues
 clean-test-components:
     rm -rf examples/fetch-rs/target/
@@ -15,12 +17,12 @@ test:
     cargo test --doc --workspace -- --nocapture
 
 build mode="debug":
-    mkdir -p bin
+    @{{ if os() == "windows" { "New-Item -ItemType Directory -Force -Path bin | Out-Null" } else { "mkdir -p bin" } }}
     cargo build --workspace {{ if mode == "release" { "--release" } else { "" } }}
-    cp target/{{ mode }}/wassette bin/
+    @{{ if os() == "windows" { "cp target/" + mode + "/wassette.exe bin/" } else { "cp target/" + mode + "/wassette bin/" } }}
     
 build-examples mode="debug":
-    mkdir -p bin
+    @{{ if os() == "windows" { "New-Item -ItemType Directory -Force -Path bin | Out-Null" } else { "mkdir -p bin" } }}
     (cd examples/fetch-rs && just build mode)
     (cd examples/filesystem-rs && just build mode)
     (cd examples/get-weather-js && just build)
